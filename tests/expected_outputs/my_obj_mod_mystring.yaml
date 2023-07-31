@@ -1,0 +1,19 @@
+# Summary information
+info:
+  name: "my_name"
+  version: "v1.0.0"
+  date: "Saturday, 29. July 2023 02:11AM"
+  author: "esbailey@me.com"
+  description: "Test parametters for developing YAMLParams class."
+
+# Parameters for use by simualation
+params:
+  myint: 42
+  myfloat: 2.718281828
+  mystring: "this is a string, modified" # got a comment here.
+  myintarray: [1, 2, 3]
+  mydict:
+    myint: 72
+    myfloat: 3.1415926
+    mystring: "this is another string"
+    myfloatarray: [4.0, 5.0, 6.0]
