@@ -1,4 +1,5 @@
-.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8
+.PHONY: all clean-all clean clean-build clean-pyc clean-test \
+        coverage dist docs help install lint lint/flake8
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -26,7 +27,11 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+all: test coverage docs  ## run tests, generate coverage report, & generate documentation
+
+clean-all: clean clean-docs  ## remove all build, test, coverage, docs, and Python artifacts
+
+clean: clean-build clean-pyc clean-test  ## remove all build, test, coverage and Python artifacts
 
 clean-build: ## remove build artifacts
 	rm -fr build/
