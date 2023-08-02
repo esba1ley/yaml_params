@@ -39,7 +39,9 @@ class YAMLParams():
         if not isinstance(name, str):
             raise TypeError('YAMLParams object initialization "name" is not an '
                             'instance of string')
-        self._yaml = YAML()
+        self._yaml = YAML(typ='rt', )
+        self._yaml.preserve_quotes = True
+        self._yaml.default_flow_style = False
         self._yaml.preserve_quotes = True
 
         # Set default values of attributes
@@ -51,7 +53,7 @@ class YAMLParams():
                                          self._name + '.yaml'))
         self.create_default_params_yaml()
         self.params = self.ryaml_to_pythonic_dict(self._params_yaml['params'])
-        
+
         # Override optional keyword arguments if not None
 
         if params is None:
@@ -107,10 +109,12 @@ class YAMLParams():
         """
         self.capture_params()
         if filepath is None:
-            with open(self._params_yaml_filepath,'w') as fh:
+
+            with open(self._params_yaml_filepath,'w', encoding="utf-8") as fh:  # pylint: disable=C0103
                 self._yaml.dump(self._params_yaml, fh)
         else:
-            with open(filepath, 'w') as fh:
+
+            with open(filepath, 'w', encoding="utf-8") as fh:  # pylint: disable=C0103
                 self._yaml.dump(self._params_yaml, fh)
 
 
@@ -130,18 +134,18 @@ class YAMLParams():
             _description_, by default None
         """
         if config_file is not None:
-            with open(config_file, 'r') as fh:
+            with open(config_file, 'r', encoding="utf-8") as fh:  # pylint: disable=C0103
                 self._params_yaml = self._yaml.load(fh)
-            
+
             self._params_yaml_filepath = os.path.abspath(config_file)
             self._params_yaml_dir, filename = os.path.split(self._params_yaml_filepath)
             self._name = filename.split('.')[0]
         else:
-            with open(self._params_yaml_filepath, 'r') as fh:
+            with open(self._params_yaml_filepath, 'r', encoding="utf-8") as fh:  # pylint: disable=C0103
                 self._params_yaml = self._yaml.load(fh)
 
         self.params = self.ryaml_to_pythonic_dict(self._params_yaml['params'])
-    
+
 
     def create_default_params_yaml(self, kind="SELF_GENERATED"):
         """_summary_
@@ -171,7 +175,6 @@ class YAMLParams():
                                                  f"YAMLParams object "
                                                  f"'{self._name}'.")
 
-        
 
     def ryaml_to_pythonic_dict(self, obj):
         """_summary_
@@ -195,7 +198,7 @@ class YAMLParams():
             obj = float(obj)
 
         return obj
-        
+
 
     def populate_params_yaml_from_dict(self,param_obj, yaml_obj):
         """_summary_
@@ -212,15 +215,23 @@ class YAMLParams():
         _type_
             _description_
         """
+        
+        # print(f'MRO for param_obj: {param_obj.__class__.__mro__}')
+        # print(f'MRO for yaml_obj: {yaml_obj.__class__.__mro__}')
         if isinstance(param_obj, dict):
             for key, item in param_obj.items():
+                # print(f'Processing key: {key}')
                 if key in yaml_obj.keys():
                     yaml_obj[key] = \
                         self.populate_params_yaml_from_dict(item, yaml_obj[key])
                 else:
-                    yaml_obj[key] = param_obj[key]
+                    yaml_obj[key] = self.populate_params_yaml_from_dict(item, type(item)() )
         elif isinstance(param_obj, list):
-            yaml_obj = list(map(self.populate_params_yaml_from_dict,
+            # print('found list!')
+            yaml_obj = [None]
+            yaml_obj *= len(param_obj)
+            for i, item in enumerate(param_obj):
+                yaml_obj = list(map(self.populate_params_yaml_from_dict,
                                       param_obj, yaml_obj))
             
             buf = io.StringIO()
@@ -231,10 +242,5 @@ class YAMLParams():
             yaml_obj.fa.set_flow_style()
         else:            
             yaml_obj = param_obj
-
-        buf = io.StringIO()
-        self._yaml.dump(yaml_obj, buf)
-        yaml_obj = self._yaml.load(buf.getvalue())
-        buf.close()
 
         return yaml_obj

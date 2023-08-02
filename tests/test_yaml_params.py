@@ -170,3 +170,35 @@ def test_yamlparams_edit_string_w_comment():
     assert filecmp.cmp('my_obj_saved.yaml',
                        './tests/expected_outputs/my_obj_mod_mystring.yaml')
     os.remove('my_obj_saved.yaml')
+    
+def test_yamlparams_manual_set_params():
+    my_obj = YAMLParams('my_obj', load_file=False)
+    my_obj.params = {'myint': 1,
+                     'myfloat': 1.234, 
+                     'mybool': False,
+                     'mystr': 'this is a string.',
+                     'mylistofints': [1,2,3,4,5],
+                     'mylistoffloats': [1.23, 4.56, 7.89],
+                     'mylistofbools': [False, True, False, False, True],
+                     'mylistofstrs': ['one', 'two', 'three and four', 'five']
+                     }
+    my_obj.capture_params()
+    dt_str = datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    assert my_obj.dump_params_yaml() == (
+       f"# Parameters (params) for YAMLParams object 'my_obj'.\n"
+       f"info:\n"
+       f"  name: my_obj\n"
+       f"  version: v0.1.0\n"
+       f"  date: {dt_str}\n"
+       f"  author: 'YAMLParams class, kind: SELF_GENERATED'\n"
+       f"  description: Test parametters for developing YAMLParams class.\n"
+       f"params:\n"
+       f"  myint: 1\n"
+       f"  myfloat: 1.234\n"
+       f"  mybool: false\n"
+       f"  mystr: this is a string.\n"
+       f"  mylistofints: [1, 2, 3, 4, 5]\n"
+       f"  mylistoffloats: [1.23, 4.56, 7.89]\n"
+       f"  mylistofbools: [false, true, false, false, true]\n"
+       f"  mylistofstrs: [one, two, three and four, five]\n"
+    )

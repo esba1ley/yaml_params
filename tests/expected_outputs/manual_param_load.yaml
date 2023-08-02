@@ -1,0 +1,16 @@
+# Parameters (params) for YAMLParams object 'my_obj'.
+info:
+  name: my_obj
+  version: v0.1.0
+  date: Tuesday, 01. August 2023 06:08PM
+  author: 'YAMLParams class, kind: SELF_GENERATED'
+  description: Test parametters for developing YAMLParams class.
+params:
+  myint: 1
+  myfloat: 1.234
+  mybool: false
+  mystr: this is a string.
+  mylistofints: [1, 2, 3, 4, 5]
+  mylistoffloats: [1.23, 4.56, 7.89]
+  mylistofbools: [false, true, false, false, true]
+  mylistofstrs: [one, two, three and four, five]
