@@ -28,7 +28,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="ObObjects with parameters that are YAML-able.",
+    description="Objects with parameters that are YAML-able.",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
