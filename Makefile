@@ -47,6 +47,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
+clean-docs:  ## remove documentation build artifacts
+	rm -f docs/yaml_params.rst
+	rm -f docs/modules.rst
+	$(MAKE) -C docs clean
+
 lint/flake8: ## check style with flake8
 	flake8 yaml_params tests
 
@@ -64,11 +69,8 @@ coverage: ## check code coverage quickly with the default Python
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/yaml_params.rst
-	rm -f docs/modules.rst
+docs: clean-docs  ## generate Sphinx HTML documentation, including API docs
 	sphinx-apidoc -o docs/ yaml_params
-	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
