@@ -1,3 +1,7 @@
+# generated documentation files
+docs/modules.rst
+docs/yaml_params.rst
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
