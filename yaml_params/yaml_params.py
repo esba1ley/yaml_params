@@ -23,15 +23,17 @@ class YAMLParams():
             path to directory containing name.yaml, by default None
         params : dict, optional
            dictionary of parameters with which to initialize, by default None
+        load_file : bool, optional
+            whether or not to load from the YAML file matching config_dir/[name].yaml
 
         Raises
         ------
         TypeError
-            Raised if config_file or name is not a string.
+            Raised if name is not a string.
         TypeError
-            _description_
+            Raised if config_dir is not a string.
         TypeError
-            _description_
+            Raised if params is not a dict.
         """
 
         # Check type of positional arguments used in this method
@@ -85,12 +87,14 @@ class YAMLParams():
 
 
     def dump_params_yaml(self):
-        """_summary_
+        """Dump YAML formatted params to a string.
+
+        Dumps self._params_yaml using the ruamel.yaml Round-Trip dumper.
 
         Returns
         -------
-        _type_
-            _description_
+        str
+            YAML file formatted string with contents of self._params_yaml
         """
         self.capture_params()
         buf = io.StringIO()
@@ -100,12 +104,16 @@ class YAMLParams():
         return out
 
     def save_params_yaml(self, filepath=None):
-        """_summary_
+        """Save params to YAML file.
+
+        If the user does not specify a file, this will write a YAML file to the location where
+        the file was loaded, overwriting the previous file.  If the user specifies the 
+        filepath option, the YAML output will be saved to the specified location.
 
         Parameters
         ----------
-        filepath : _type_, optional
-            _description_, by default None
+        filepath : str, optional
+            filepath to which to save params contents, by default None
         """
         self.capture_params()
         if filepath is None:
@@ -119,19 +127,20 @@ class YAMLParams():
 
 
     def capture_params(self):
-        """_summary_
+        """Translate the plain Python-typed self.params to the ruamel.yaml-typed 
+        self._params_yaml.
         """
-        self._params_yaml['params'] = self.populate_params_yaml_from_dict(self.params, 
+        self._params_yaml['params'] = self.merge_params_into_yaml(self.params, 
                                                                 self._params_yaml['params'])
 
 
     def read_params_config(self, config_file=None):
-        """_summary_
+        """Reads a YAML file into the object's params.
 
         Parameters
         ----------
-        config_file : _type_, optional
-            _description_, by default None
+        config_file : string, optional
+            filepath of the YAML file to load, by default None
         """
         if config_file is not None:
             with open(config_file, 'r', encoding="utf-8") as fh:  # pylint: disable=C0103
@@ -147,13 +156,16 @@ class YAMLParams():
         self.params = self.ryaml_to_pythonic_dict(self._params_yaml['params'])
 
 
-    def create_default_params_yaml(self, kind="SELF_GENERATED"):
-        """_summary_
+    def create_default_params_yaml(self, kind='SELF_GENERATED'):
+        """Create default contents for self.params and self._params_yaml.
+
+        This creates an empty params dict and a pre-formatted "info" block
+        for when the YAML file is saved.  
 
         Parameters
         ----------
         kind : str, optional
-            _description_, by default "SELF_GENERATED"
+            the kind of data generated, by default "SELF_GENERATED"
         """
 
         yaml_dict = {
@@ -177,17 +189,17 @@ class YAMLParams():
 
 
     def ryaml_to_pythonic_dict(self, obj):
-        """_summary_
+        """Convert a pythonic dict to a ruamel.yaml friendly types.
 
         Parameters
         ----------
-        obj : _type_
-            _description_
+        obj : CommentedMap
+            ruamel.yaml dict type w/ other ruamel.yaml types in it.
 
         Returns
         -------
-        _type_
-            _description_
+        dict
+            a "Pure-python" (no ruamel.yaml types) version of the input. 
         """
         if isinstance(obj, CommentedSeq):
             obj = list(obj)
@@ -200,20 +212,24 @@ class YAMLParams():
         return obj
 
 
-    def populate_params_yaml_from_dict(self,param_obj, yaml_obj):
-        """_summary_
+    def merge_params_into_yaml(self,param_obj, yaml_obj):
+        """Grab self.params and convert contents into self._params_yaml.
+
+        This is a helper function to take changes to the self.params and
+        capture them into the ruamel.yaml CommentedMap() that may alaready
+        have comments specified in it.
 
         Parameters
         ----------
-        param_obj : _type_
-            _description_
-        yaml_dict : _type_
-            _description_
+        param_obj : dict
+            dict of pythonic objects
+        yaml_dict : CommentedMap()
+            CommentedMap() of ruamel.yaml objects into which to merge param_obj
 
         Returns
         -------
-        _type_
-            _description_
+        CommentedMap()
+            the merged contents of param_obj into yaml_dict.
         """
         
         # print(f'MRO for param_obj: {param_obj.__class__.__mro__}')
@@ -223,15 +239,15 @@ class YAMLParams():
                 # print(f'Processing key: {key}')
                 if key in yaml_obj.keys():
                     yaml_obj[key] = \
-                        self.populate_params_yaml_from_dict(item, yaml_obj[key])
+                        self.merge_params_into_yaml(item, yaml_obj[key])
                 else:
-                    yaml_obj[key] = self.populate_params_yaml_from_dict(item, type(item)() )
+                    yaml_obj[key] = self.merge_params_into_yaml(item, type(item)() )
         elif isinstance(param_obj, list):
             # print('found list!')
             yaml_obj = [None]
             yaml_obj *= len(param_obj)
             for i, item in enumerate(param_obj):
-                yaml_obj = list(map(self.populate_params_yaml_from_dict,
+                yaml_obj = list(map(self.merge_params_into_yaml,
                                       param_obj, yaml_obj))
             
             buf = io.StringIO()

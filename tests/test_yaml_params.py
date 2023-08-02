@@ -1,4 +1,4 @@
-"""Tests for `yaml_params` package."""
+"""Tests for `yaml_params` module."""
 import os
 import pytest
 from collections import OrderedDict
