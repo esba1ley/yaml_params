@@ -6,17 +6,32 @@ from yaml_params import YAMLParams
 from datetime import datetime
 import filecmp
 
-def test_yamlparams_init_noargs():
+def test_init_assert_noargs():
     """Test to make sure YAMLParams asserts when no name argument."""
     with pytest.raises(TypeError):
         myObj = YAMLParams()
 
-def test_yamlparams_init_nameonly_nofile():
+def test_init_assert_name_not_string():
+    """Test to make sure that the name given is a string."""
+    with pytest.raises(TypeError):
+        myObj = YAMLParams(42)
+
+def test_init_assert_configdir_not_string():
+    """Test to make sure that the config_dir arg is a string."""
+    with pytest.raises(TypeError):
+        myObj = YAMLParams("my_name", config_dir=42)
+
+def test_init_assert_params_not_dict():
+    """Test to make sure that the params arg is a dict."""
+    with pytest.raises(TypeError):
+        myObj = YAMLParams("my_name", params=42)
+
+def test_init_nameonly_nofile():
     """Test to make sure YAMLParams asserts when no file exists."""
     with pytest.raises(FileNotFoundError):
         myObj = YAMLParams("no_file_with_name")
 
-def test_yamlparams_init_load_file_false():
+def test_init_load_file_false():
     """Test to make sure YAMLParams iniailizes correctly w/ load_file=False."""
     myObj = YAMLParams("my_obj", load_file=False)
     dt_str = datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
@@ -30,7 +45,7 @@ def test_yamlparams_init_load_file_false():
     assert myObj._params_yaml['params'] == OrderedDict()
 
 
-def test_yamlparams_init_load_file_false_dump():
+def test_init_load_file_false_dump():
     """test dump_params_yaml() method for a load_file=False object."""
     myObj = YAMLParams("my_obj", load_file=False)
     dt_str = datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
@@ -45,7 +60,7 @@ def test_yamlparams_init_load_file_false_dump():
     )
 
 
-def test_yamlparams_init_nameonly_w_file():
+def test_init_nameonly_w_file():
     startdir = os.path.abspath(os.path.curdir)
     os.chdir(os.path.join(startdir, 'tests', 'inputs'))
     my_obj = YAMLParams("my_obj")
@@ -66,7 +81,7 @@ def test_yamlparams_init_nameonly_w_file():
     assert my_obj.params == expected_params
     
 
-def test_yamlparams_init_w_config_dir():
+def test_init_w_config_dir():
     my_obj = YAMLParams("my_obj", config_dir="tests/inputs")
     assert my_obj._name == "my_obj"
     expected_params = {
@@ -83,7 +98,7 @@ def test_yamlparams_init_w_config_dir():
                        }
     assert my_obj.params == expected_params
 
-def test_yamlparams_dump_loaded_w_comments():
+def test_dump_loaded_w_comments():
     my_obj = YAMLParams("my_obj", config_dir="tests/inputs")
     assert my_obj.dump_params_yaml() == (
         '# Summary information\n'
@@ -106,7 +121,7 @@ def test_yamlparams_dump_loaded_w_comments():
         '    myfloatarray: [4.0, 5.0, 6.0]\n'
     )
 
-def test_yamlparams_init_w_params_dict():
+def test_init_w_params_dict():
     my_params = {'myfloat':1.234,
                  'mystr':'this is a string.',
                  'mylistoffloats':[1.2,3.4,5.6],
@@ -115,7 +130,7 @@ def test_yamlparams_init_w_params_dict():
     my_obj = YAMLParams("my_obj", params=my_params)
     assert my_obj.params == my_params
 
-def test_yamlparams_read_config_file():
+def test_read_config_file():
     myObj = YAMLParams("my_obj", load_file=False)
     myObj.read_params_config(config_file='tests/inputs/my_obj.yaml')
     assert myObj.dump_params_yaml() == (
@@ -154,7 +169,7 @@ def test_yamlparams_read_config_file():
     assert myObj._params_yaml_dir.endswith('tests/inputs')
     assert myObj._params_yaml_filepath.endswith('tests/inputs/my_obj.yaml')
 
-def test_yamlparams_save_params_yaml():
+def test_save_params_yaml():
     myObj = YAMLParams('my_obj', config_dir='tests/inputs')
     myObj._params_yaml_dir = os.path.abspath(os.path.curdir)
     myObj._params_yaml_filepath = os.path.join(myObj._params_yaml_dir, 'my_obj_saved.yaml')
@@ -163,7 +178,7 @@ def test_yamlparams_save_params_yaml():
                        './tests/expected_outputs/my_obj.yaml')
     os.remove('my_obj_saved.yaml')
 
-def test_yamlparams_edit_string_w_comment():
+def test_edit_string_w_comment():
     myObj = YAMLParams('my_obj', config_dir='tests/inputs')
     myObj.params['mystring'] = 'this is a string, modified'
     myObj.save_params_yaml(filepath=os.path.join(os.path.curdir,'my_obj_saved.yaml'))
@@ -171,7 +186,7 @@ def test_yamlparams_edit_string_w_comment():
                        './tests/expected_outputs/my_obj_mod_mystring.yaml')
     os.remove('my_obj_saved.yaml')
     
-def test_yamlparams_manual_set_params():
+def test_manual_set_params():
     my_obj = YAMLParams('my_obj', load_file=False)
     my_obj.params = {'myint': 1,
                      'myfloat': 1.234, 
